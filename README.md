@@ -48,6 +48,17 @@ Cada achado confirmado é registrado em YAML seguindo
 contínua: roda os scanners, quebra o build em achados **CRITICAL** e envia SARIF
 para o Code Scanning. Copie para `.github/workflows/` no repositório alvo.
 
+## Uso com agente (Claude Code)
+
+O repositório inclui uma skill que executa o framework de ponta a ponta:
+[`.claude/skills/security-audit`](.claude/skills/security-audit/SKILL.md).
+
+Ao abrir este repositório (ou o repositório alvo, com esta skill instalada) no
+Claude Code, peça algo como *"faça uma auditoria de segurança deste projeto"* — a
+skill confirma a autorização, define o escopo, roda o `bootstrap-scan`, percorre os
+pilares na ordem e consolida os achados no schema YAML. Para revisar apenas o diff
+atual, use o `/security-review` nativo.
+
 ## Uso responsável
 
 Esta metodologia destina-se exclusivamente a **testes de segurança autorizados**:
