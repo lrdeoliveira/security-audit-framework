@@ -1,0 +1,69 @@
+# Registro de achados de auditoria de segurança
+# Copie este arquivo para auditorias/{produto}-{YYYY-MM-DD}/achados.yaml
+# Schema completo documentado em AUDITORIA.md
+
+meta:
+  produto: "Nome do produto ou sistema"
+  data_inicio: "YYYY-MM-DD"
+  data_fim: null
+  auditor: "Nome do auditor"
+  escopo: "URLs, repos e ambientes cobertos"
+  versao_framework: "1.2"
+
+resumo:
+  total: 0
+  critico: 0
+  alto: 0
+  medio: 0
+  baixo: 0
+  info: 0
+
+# Cobertura (opcional, mas recomendado): mede quanto da superfície foi testado.
+# Preencha a partir do attack-surface.md / pre-scan.md.
+cobertura:
+  endpoints_total: 0
+  endpoints_testados: 0
+  componentes_ia_total: 0
+  componentes_ia_testados: 0
+  observacao: "ex: 14/22 endpoints; RAG e tool-use cobertos; webhooks fora de escopo"
+
+achados:
+  - id: AUD-001
+    titulo: "Título descritivo e específico do achado"
+    severidade: critico  # critico | alto | medio | baixo | info
+    cvss: "9.8 (AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H)"
+    owasp: "A01:2021 - Broken Access Control"
+    cwe: "CWE-639"
+    pilar: validar  # descobrir | analisar | validar
+    subpilar: dast  # dast | red-team | ia | null
+    status: rascunho  # rascunho | confirmado | falso_positivo | corrigido
+    prompt_origem: "03-validar/dast/exploracao-de-idor-e-controle-de-acesso.md"
+    deriva_de: null  # id do achado de origem (ex: rascunho do Pilar 2 confirmado aqui) ou null
+    conformidade:    # controles violados (opcional; ver 04-entregar/mapeamento-de-conformidade.md)
+      lgpd: null     # ex: "Art. 46"
+      soc2: null     # ex: "CC6.1"
+      iso27001: null # ex: "A.8.3"
+      asvs: null     # ex: "V4.1.1"
+    localizacao: "/api/v1/users/{id}"
+    descricao: |
+      Descrição técnica da vulnerabilidade e causa raiz.
+    poc: |
+      curl -X GET 'https://alvo.com/api/v1/users/123' \
+        -H 'Authorization: Bearer TOKEN_USUARIO_B'
+    impacto: |
+      Atacante autenticado consegue acessar dados de qualquer usuário
+      alterando o parâmetro {id} na URL.
+    remediacao: |
+      Validar que o usuário autenticado tem permissão para acessar
+      o recurso solicitado antes de retornar os dados.
+    referencias:
+      - "https://cwe.mitre.org/data/definitions/639.html"
+      - "https://owasp.org/Top10/A01_2021-Broken_Access_Control/"
+    evidencias: "evidencias/AUD-001/"
+    data_descoberta: "YYYY-MM-DD"
+    data_correcao: null
+    reteste: pendente  # pendente | aprovado | reprovado
+
+  # - id: AUD-002
+  #   titulo: "..."
+  #   ...

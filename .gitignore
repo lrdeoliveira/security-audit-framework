@@ -1,0 +1,17 @@
+# Laudos de auditoria reais — NUNCA versionar/publicar (dados de produção)
+auditorias/
+
+# Memória/contexto interno
+CLAUDE.md
+nexus-guideline-update-*.md
+
+# Saídas locais de scan
+raw-scans/
+pre-scan.md
+*.sarif
+
+# SO / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/

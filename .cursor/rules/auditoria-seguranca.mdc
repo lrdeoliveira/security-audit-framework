@@ -1,0 +1,35 @@
+---
+description: Framework de auditoria de segurança — 4 pilares, prompts e schema de achados
+alwaysApply: true
+---
+
+# Auditoria de Segurança (Cyber Segurança)
+
+Ao auditar segurança neste workspace, siga o framework em `AUDITORIA.md`.
+
+## Fluxo obrigatório
+
+1. `00-orquestrador/plano-de-ataque-em-5-fases.md` — planejar escopo
+2. `01-descobrir/` — reconhecimento e superfície de ataque
+3. `02-analisar/` — SAST, segredos, criptografia, IaC, MCP (auth primeiro)
+4. `03-validar/` — DAST, red-team, IA (se aplicável)
+5. `04-entregar/` — ficha técnica, sumário, roadmap, automação
+
+## Registro de achados
+
+- Criar `auditorias/{produto}-{YYYY-MM-DD}/achados.yaml` a partir de `templates/registro-de-achado.yaml`
+- Achados confirmados: `id` AUD-NNN, severidade, CVSS, OWASP, CWE, pilar, status, poc, impacto, remediacao, `prompt_origem`
+- Relatório final: `templates/relatorio-final.md`
+
+## Matriz rápida
+
+| Alvo | Executar | Pular |
+|------|----------|-------|
+| API REST | 1, 2, 3-DAST, 4 | IA |
+| SPA + backend | Todos | — |
+| App com LLM | Todos + `03-validar/ia/` | — |
+| Reteste | 3 (casos afetados), 4 | 1–2 se stack mudou |
+
+## Referência
+
+Prompts originais (não reorganizados): `../Segurança de Projetos/`
