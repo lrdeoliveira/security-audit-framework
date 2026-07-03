@@ -20,10 +20,10 @@ Cole a configuração de logging, exemplos de chamadas de log no código (auth, 
 Atue como especialista em logging de segurança e resposta a incidentes. Analise {{CODIGO_DE_LOGGING}} e identifique:
 
 (1) Eventos de segurança não logados: login/logout, falhas de autenticação, mudança de senha/email, falhas de autorização, uso de privilégio, mudanças de role, transações sensíveis, chamadas de tool por agentes de IA;
-(2) Vazamento em logs: senhas, tokens, chaves, PII, dados de cartão, prompts/respostas de LLM com dado sensível registrados em texto claro;
+(2) Vazamento em logs: senhas, tokens, chaves, PII, dados de cartão, prompts/respostas de LLM com dado sensível registrados em texto claro; ausência de redação/masking — Laravel `config/logging.php` (e Telescope exposto em produção), Sentry `send_default_pii=false`/`beforeSend`, Go `slog`/`zap` com redaction de campos sensíveis;
 (3) Log injection / forging: dados de usuário concatenados em log sem sanitização (CRLF, falsificação de entradas);
 (4) Ausência de contexto para investigação: falta de timestamp UTC, request id, user id, origem (IP), correlação entre serviços;
-(5) Tampering: logs graváveis pela aplicação, sem retenção/imutabilidade, sem centralização;
+(5) Tampering: logs graváveis pela aplicação, sem centralização; falta de política de retenção e de imutabilidade (armazenamento WORM), exigida por conformidade (LGPD) para trilha de auditoria;
 (6) Detecção e alerta: ausência de alarme para força bruta, picos de erro 4xx/5xx, exfiltração, anomalias de uso de IA/custo;
 (7) Tratamento de erro que esconde incidentes (catch silencioso) ou que expõe stack trace ao usuário.
 

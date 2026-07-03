@@ -46,8 +46,10 @@ bootstrap-scan → 01 descobrir → 02 analisar → 03 validar → 04 entregar
 - **Pilar 3 — Validar (`03-validar/`)** — confirme explorabilidade:
   - `dast/` — IDOR, auth/account-takeover, XSS ativo, rate-limiting/brute-force/DoS,
     lógica de negócio, upload, vazamento de informação.
-  - `ia/` — prompt-injection, guardrails, RAG, tool-use/excessive-agency, output
-    handling inseguro (LLM05), denial-of-wallet/consumo ilimitado (LLM10).
+  - `ia/` — na numeração do OWASP LLM Top 10 2025: prompt-injection (LLM01),
+    guardrails, RAG e vector/embedding (LLM08), system prompt leakage (LLM07),
+    tool-use/excessive-agency (LLM06), output handling inseguro (LLM05),
+    denial-of-wallet/consumo ilimitado (LLM10).
   - `red-team/` — cadeia de exploração multi-vetor.
   - Pule o sub-pilar de IA se o alvo não tiver IA/LLM/MCP.
 - **Pilar 4 — Entregar (`04-entregar/`)** — sumário executivo, roadmap de remediação
@@ -59,7 +61,7 @@ bootstrap-scan → 01 descobrir → 02 analisar → 03 validar → 04 entregar
 Para cada arquivo de prompt do pilar: leia-o, substitua os placeholders pelo contexto
 real do alvo, execute a análise contra o código/sistema, e **registre todo achado
 confirmado** no `achados.yaml` usando o schema do `AUDITORIA.md` (id `AUD-NNN`,
-severidade, CVSS 3.1, OWASP, CWE, pilar/subpilar, `prompt_origem`, `deriva_de` quando
+severidade, CVSS 4.0, OWASP, CWE, pilar/subpilar, `prompt_origem`, `deriva_de` quando
 um rascunho do Pilar 2 vira confirmado no Pilar 3, `conformidade`, localização, PoC,
 impacto, remediação, reteste). Preencha o bloco `cobertura` (endpoints testados/total).
 

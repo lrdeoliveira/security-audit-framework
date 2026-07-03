@@ -20,7 +20,7 @@ chmod +x 00-orquestrador/bootstrap-scan.sh
 ./00-orquestrador/bootstrap-scan.sh /caminho/do/repo <produto> [YYYY-MM-DD]
 
 # Exemplo
-./00-orquestrador/bootstrap-scan.sh /Volumes/M5SSD/nexusyn-mono nexusyn
+./00-orquestrador/bootstrap-scan.sh ~/projetos/minha-app minha-app
 ```
 
 Saída:
@@ -43,20 +43,23 @@ pipx install mcp-scan        # ou: pip install mcp-scan
 
 # Linux
 pipx install semgrep checkov mcp-scan
-# trivy, gitleaks, trufflehog, osv-scanner: ver releases oficiais no GitHub
+# trivy:       https://trivy.dev/latest/getting-started/installation/
+# gitleaks:    go install github.com/gitleaks/gitleaks/v8@latest  (ou release no GitHub)
+# trufflehog:  curl -sSfL https://raw.githubusercontent.com/trufflesecurity/trufflehog/main/scripts/install.sh | sh -s -- -b /usr/local/bin
+# osv-scanner: go install github.com/google/osv-scanner/v2/cmd/osv-scanner@latest
 ```
 
 ## O que cada scanner cobre
 
-| Scanner | Cobertura | Prompt do Pilar 2 que alimenta |
-|---------|-----------|-------------------------------|
-| Semgrep | SAST (injection, auth, XSS, etc.) | todos os de análise estática |
-| Gitleaks | segredos no histórico git | `analise-de-segredos-e-configuracao-insegura.md` |
+| Scanner | Cobertura | Prompt que alimenta (com o pilar no caminho) |
+|---------|-----------|----------------------------------------------|
+| Semgrep | SAST (injection, auth, XSS, etc.) | todos os de `02-analisar/` |
+| Gitleaks | segredos no histórico git | `02-analisar/analise-de-segredos-e-configuracao-insegura.md` |
 | TruffleHog | segredos **verificados** (ativos) | idem — prioridade máxima |
-| Trivy | SCA + IaC + secrets | `analise-de-package-manifest-e-dependencias.md`, `revisao-de-iac-gerado-por-ia.md` |
-| osv-scanner | SCA (fallback OSV) | `analise-de-package-manifest-e-dependencias.md` |
-| Checkov | IaC misconfig | `revisao-de-iac-gerado-por-ia.md` |
-| mcp-scan | escopo/over-permission de MCP | `analise-de-configuracao-de-mcp-e-escopo-de-tools.md` |
+| Trivy | SCA + IaC + secrets | `01-descobrir/analise-de-package-manifest-e-dependencias.md`, `02-analisar/revisao-de-iac-gerado-por-ia.md` |
+| osv-scanner | SCA (fallback OSV) | `01-descobrir/analise-de-package-manifest-e-dependencias.md` |
+| Checkov | IaC misconfig | `02-analisar/revisao-de-iac-gerado-por-ia.md` |
+| mcp-scan | escopo/over-permission de MCP | `02-analisar/analise-de-configuracao-de-mcp-e-escopo-de-tools.md` |
 
 ## Saída esperada
 `pre-scan.md` com contagens, top findings por categoria, inventário de stack e checklist de próximos passos manuais.

@@ -2,7 +2,7 @@
 
 **Pilar:** analisar
 **Fase:** 2
-**Categoria:** supply-chain
+**Categoria:** iac
 **OWASP:** A05:2021 - Security Misconfiguration
 **Ferramentas sugeridas:** Checkov, Trivy
 **Intenção:** Identificar misconfigurações em infraestrutura como código produzida por assistentes de IA.
@@ -18,14 +18,17 @@ Cole os arquivos Terraform, CloudFormation, Kubernetes manifests ou Dockerfiles.
 
 ## Prompt
 ```
-Atue como especialista em segurança de infraestrutura. Análise {{ARQUIVOS_IAC}} para ambiente {{AMBIENTE}} e identifique:
+Atue como especialista em segurança de infraestrutura. Analise {{ARQUIVOS_IAC}} para ambiente {{AMBIENTE}} e identifique:
 
 (1) Exposição de rede: portas abertas desnecessariamente, security groups permissivos (0.0.0.0/0);
-(2) IAM e permissões: roles com permissões mais amplas do que necessario, wildcards em policies;
+(2) IAM e permissões: roles com permissões mais amplas do que necessário, wildcards em policies;
 (3) Armazenamento: buckets S3 com acesso público, objetos sem criptografia, logging desabilitado;
-(4) Imagens de container: uso de imagem :latest, usuário root, capabilities desnecessarias;
+(4) Imagens de container: uso de imagem :latest (sem pin por digest), usuário root, capabilities desnecessárias;
 (5) Segredos em IaC: credenciais hardcoded em vars ou outputs, valores sensíveis em state;
-(6) Padroes de IA: configurações com valores de placeholder, comentários de scaffold em arquivo de produção.
+(6) Padrões de IA: configurações com valores de placeholder, comentários de scaffold em arquivo de produção;
+(7) docker-compose: portas de infra (Postgres/Redis) publicadas sem bind `127.0.0.1:` (furo campeão), `privileged: true`, montagem de `/var/run/docker.sock`, `cap_add`, ausência de `HEALTHCHECK`, de usuário não-root e de pin por digest;
+(8) Kubernetes: `privileged`, `hostNetwork`/`hostPath`, ausência de `runAsNonRoot`/`readOnlyRootFilesystem`/`securityContext`, `allowPrivilegeEscalation: true`, falta de NetworkPolicy, secrets como env em vez de volume;
+(9) Terraform: state sem criptografia/backend remoto, provider ou módulo sem pin de versão.
 ```
 
 ## Saída esperada

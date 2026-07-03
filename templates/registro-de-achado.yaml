@@ -8,7 +8,7 @@ meta:
   data_fim: null
   auditor: "Nome do auditor"
   escopo: "URLs, repos e ambientes cobertos"
-  versao_framework: "1.2"
+  versao_framework: "1.3"
 
 resumo:
   total: 0
@@ -30,8 +30,9 @@ cobertura:
 achados:
   - id: AUD-001
     titulo: "Título descritivo e específico do achado"
-    severidade: critico  # critico | alto | medio | baixo | info
-    cvss: "9.8 (AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H)"
+    severidade: alto  # critico | alto | medio | baixo | info
+    # Preferir CVSS 4.0 (padrão atual); 3.1 aceito p/ compat com scanners legados.
+    cvss: "CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:L/VA:N/SC:N/SI:N/SA:N (8.3)"
     owasp: "A01:2021 - Broken Access Control"
     cwe: "CWE-639"
     pilar: validar  # descobrir | analisar | validar
@@ -41,9 +42,13 @@ achados:
     deriva_de: null  # id do achado de origem (ex: rascunho do Pilar 2 confirmado aqui) ou null
     conformidade:    # controles violados (opcional; ver 04-entregar/mapeamento-de-conformidade.md)
       lgpd: null     # ex: "Art. 46"
+      gdpr: null     # ex: "Art. 32"
       soc2: null     # ex: "CC6.1"
-      iso27001: null # ex: "A.8.3"
-      asvs: null     # ex: "V4.1.1"
+      iso27001: null # ex: "A.8.3" (ISO/IEC 27001:2022)
+      asvs: null     # ex: "v5.0.0-1.2.5" (OWASP ASVS 5.0)
+      pci_dss: null  # ex: "6.2.4" (PCI DSS 4.0)
+      nist_csf: null # ex: "PR.AA-01" (NIST CSF 2.0)
+      cis: null      # ex: "4.1" (CIS Controls v8.1)
     localizacao: "/api/v1/users/{id}"
     descricao: |
       Descrição técnica da vulnerabilidade e causa raiz.

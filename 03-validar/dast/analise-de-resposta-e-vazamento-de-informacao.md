@@ -17,14 +17,14 @@ Cole respostas HTTP reais capturadas no proxy ou via curl. Inclua headers, body 
 
 ## Prompt
 ```
-Análise nexusyn como especialista em vazamento de informação e identifique:
+Atue como especialista em vazamento de informação e analise as respostas HTTP {{RESPOSTAS_HTTP}} para identificar:
 
 (1) PII ou dados sensíveis retornados desnecessariamente: senha hash, token, dados internos de outros usuários;
 (2) Stack traces e mensagens de erro que revelam tecnologia, paths internos ou lógica de negócio;
-(3) Headers que expoe informação: Server, X-Powered-By, versões, IPs internos;
-(4) Dados de usuários além do necessario para a funcionalidade (over-fetching);
-(5) Diferencas de resposta que permitem enumeração: usuário existe vs. não existe;
-(6) Tokens ou identificadores previsiveis expostos em respostas que deveriam ser opacos.
+(3) Headers que expõe informação: Server, X-Powered-By, versões, IPs internos;
+(4) Dados de usuários além do necessário para a funcionalidade (over-fetching);
+(5) Diferenças de resposta que permitem enumeração: usuário existe vs. não existe;
+(6) Tokens ou identificadores previsíveis expostos em respostas que deveriam ser opacos.
 ```
 
 ## Saída esperada

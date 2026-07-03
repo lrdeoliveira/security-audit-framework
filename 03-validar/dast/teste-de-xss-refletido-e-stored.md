@@ -4,7 +4,7 @@
 **Fase:** 3
 **Categoria:** dast
 **OWASP:** A03:2021 - Injection
-**Ferramentas sugeridas:** Burp Suite, manual, navegador com DevTools
+**Ferramentas sugeridas:** Burp Suite, Burp DOM Invader, manual, navegador com DevTools
 **Intenção:** Confirmar dinamicamente XSS refletido, stored e DOM, gerando payloads que contornam o encoding/sanitização do alvo.
 
 ## Como usar
@@ -20,8 +20,8 @@ Liste os pontos de injeção candidatos (parâmetros, campos, headers, fragmento
 Atue como especialista em exploração de XSS. Para os pontos {{PONTOS_DE_INJECAO}}, elabore:
 
 (1) Payloads por contexto: corpo HTML, atributo (com/sem aspas), dentro de <script>/JSON, URL/href, evento inline, CSS;
-(2) Quebra de sanitização: variações que driblam allowlists e filtros comuns (case, encoding HTML/URL/unicode, tags aninhadas, mutation XSS, atributos sem valor);
-(3) DOM XSS: payloads via fragmento (#), postMessage e parâmetros lidos por JS, com o sink alvo;
+(2) Quebra de sanitização: variações que driblam allowlists e filtros comuns (case, encoding HTML/URL/unicode, tags aninhadas, mutation XSS, atributos sem valor, bypass de DOMPurify/sanitizer);
+(3) DOM XSS: payloads via fragmento (#), postMessage e parâmetros lidos por JS, com o sink alvo; incluindo template injection client-side (AngularJS/Vue sandbox escape);
 (4) Bypass de CSP: avaliar gadgets (JSONP, base-uri, nonce reutilizado, script-src com domínio que hospeda libs), e se a CSP realmente bloqueia o PoC;
 (5) Stored XSS: onde persistir, onde renderiza (inclusive em painel admin / outro usuário) e blast radius;
 (6) PoC de impacto: roubo de sessão/token, ação CSRF-via-XSS, keylogger de campo sensível — não-destrutivo.

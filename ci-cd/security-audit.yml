@@ -1,19 +1,26 @@
 # ============================================================================
 # security-audit.yml — Pipeline de segurança contínua
-# Framework de Auditoria de Segurança v1.2
+# Framework de Auditoria de Segurança v1.3
 #
 # COPIE este arquivo para o repositório ALVO em:  .github/workflows/security-audit.yml
 # (não roda no repo do framework — roda no código que você audita)
 #
 # O que faz em cada PR/push:
-#   - Semgrep   (SAST)       -> SARIF no GitHub Code Scanning
-#   - Trivy     (SCA+IaC+secret) -> SARIF
-#   - Gitleaks  (segredos)
-#   - osv-scanner (deps)     -> SARIF
-#   - Gate: falha o build se houver vulnerabilidade CRITICAL
+#   - Semgrep    (SAST)            -> SARIF no Code Scanning + gate em ERROR
+#   - Trivy      (SCA+IaC+secret)  -> SARIF + gate em CRITICAL
+#   - Gitleaks   (segredos)
+#   - osv-scanner (deps)           -> SARIF
+#   - dependency-review (só em PR) -> bloqueia dependência nova vulnerável
+#   - Gate: falha o build em CRITICAL (Trivy) e em regras ERROR (Semgrep)
 #
-# Requisitos: nenhum segredo obrigatório. Para regras premium do Semgrep,
-# defina o secret SEMGREP_APP_TOKEN (opcional).
+# Actions fixadas por SHA de commit (defesa de supply-chain). Ao atualizar,
+# regenere o SHA a partir da tag e valide, ex.:
+#   gh api repos/actions/checkout/commits/v5.0.0 --jq .sha
+#
+# Secrets:
+#   SEMGREP_APP_TOKEN  (opcional)  — regras premium/registry do Semgrep
+#   GITLEAKS_LICENSE   (obrigatório p/ repos de ORGANIZAÇÃO) — gitleaks-action v2+
+#                                    é grátis só para conta pessoal.
 # ============================================================================
 
 name: security-audit
@@ -26,9 +33,9 @@ on:
     - cron: "0 6 * * 1"   # toda segunda 06:00 UTC (varredura semanal)
   workflow_dispatch:
 
+# Permissão mínima no topo; cada job eleva só o que precisa (least privilege).
 permissions:
   contents: read
-  security-events: write   # necessário para upload de SARIF (Code Scanning)
 
 concurrency:
   group: security-audit-${{ github.ref }}
@@ -39,12 +46,16 @@ jobs:
   semgrep:
     name: SAST (Semgrep)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write   # necessário para upload de SARIF
     container:
-      image: semgrep/semgrep
+      # imagem fixada por tag + digest (reprodutível)
+      image: semgrep/semgrep:1.168.0@sha256:59fbed6127ea7c5dde3ba6a85142733bb20ea9aaa36120c953904f1539aaf66e
     steps:
-      - uses: actions/checkout@08c6903cd835c34503714652243d6901844b2450 # v5.0.0
-      - name: Semgrep scan
-        run: semgrep scan --config auto --sarif --output semgrep.sarif || true
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Semgrep scan (SARIF — informativo)
+        run: semgrep scan --config auto --metrics=off --sarif --output semgrep.sarif || true
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}   # opcional
       - name: Upload SARIF
@@ -53,13 +64,20 @@ jobs:
         with:
           sarif_file: semgrep.sarif
           category: semgrep
+      - name: Semgrep gate (falha em regras ERROR)
+        run: semgrep scan --config auto --metrics=off --severity ERROR --error
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
   # ----------------------------------------------------------- SCA + IaC
   trivy:
     name: SCA / IaC (Trivy)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
-      - uses: actions/checkout@08c6903cd835c34503714652243d6901844b2450 # v5.0.0
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - name: Trivy filesystem scan (SARIF)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
@@ -74,11 +92,11 @@ jobs:
         with:
           sarif_file: trivy.sarif
           category: trivy
-      - name: Trivy gate (falha em CRITICAL)
+      - name: Trivy gate (falha em CRITICAL — vuln, secret e IaC)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: fs
-          scanners: vuln,secret
+          scanners: vuln,secret,misconfig
           severity: CRITICAL
           exit-code: "1"            # quebra o build se houver CRITICAL
           ignore-unfixed: true
@@ -87,18 +105,36 @@ jobs:
   gitleaks:
     name: Segredos (Gitleaks)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@08c6903cd835c34503714652243d6901844b2450 # v5.0.0
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           fetch-depth: 0           # histórico completo para varrer commits
-      - uses: gitleaks/gitleaks-action@4a2503250529d380e227a6f2389d047321689255 # v3.0.0
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Obrigatório em repos de ORGANIZAÇÃO (a action é grátis só p/ conta pessoal):
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+  # ------------------------------------------------- Dependency review (PR)
+  dependency-review:
+    name: Dependency review (PR)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Dependency review
+        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4
+        with:
+          fail-on-severity: critical
 
   # ------------------------------------------------------- SCA (OSV) deps
   osv-scanner:
     name: Dependências (osv-scanner)
-    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.3.8
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@9a498708959aeaef5ef730655706c5a1df1edbc2 # v2.3.8
     permissions:
       contents: read
       security-events: write

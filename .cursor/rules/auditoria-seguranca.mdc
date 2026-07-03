@@ -32,4 +32,4 @@ Ao auditar segurança neste workspace, siga o framework em `AUDITORIA.md`.
 
 ## Referência
 
-Prompts originais (não reorganizados): `../Segurança de Projetos/`
+Fonte de verdade do método, schema e índice de prompts: [`AUDITORIA.md`](../../AUDITORIA.md) na raiz do framework.

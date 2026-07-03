@@ -4,7 +4,7 @@
 **Fase:** 3
 **Categoria:** dast
 **OWASP:** A07:2021 - Identification and Authentication Failures
-**Ferramentas sugeridas:** Burp Suite (Repeater, Intruder), manual
+**Ferramentas sugeridas:** Burp Suite (Repeater, Intruder), jwt_tool / PortSwigger JWT Editor, manual
 **Intenção:** Validar dinamicamente fluxos de autenticação — reset de senha, MFA, OAuth/OIDC, sessão — buscando caminhos de account takeover.
 
 ## Como usar
@@ -22,8 +22,8 @@ Atue como especialista em account takeover. Dado o contexto {{DESCRICAO_DOS_FLUX
 (1) Reset de senha: token previsível/curto/sem expiração, reuso de token, host header injection no link, vazamento de token via Referer, mudança de email do destinatário, falta de invalidação de sessão após reset;
 (2) Verificação de email/registro: confirmação contornável, takeover por pré-registro, normalização de email (alias, unicode, case);
 (3) MFA: bypass por endpoint direto, brute force de OTP sem rate-limit, reuso/janela de OTP, backup codes fracos, "remember device" forjável, downgrade de MFA;
-(4) OAuth/OIDC: redirect_uri não validado, roubo de code via open redirect, state ausente (CSRF de login), confusão de provedor, account linking sem verificação, id_token com assinatura/aud/iss não validados;
-(5) Sessão: fixation, ausência de rotação no login/privilege change, logout que não invalida server-side, JWT (alg none, kid injection, chave fraca, falta de exp);
+(4) OAuth/OIDC: redirect_uri não validado, roubo de code via open redirect, state ausente (CSRF de login), PKCE ausente/downgrade, mix-up attack, confusão de provedor, account linking sem verificação, id_token com assinatura/aud/iss não validados;
+(5) Sessão: fixation, ausência de rotação no login/privilege change, logout que não invalida server-side, JWT (alg none, alg confusion RS256→HS256, kid injection, injeção de header `jku`/`x5u`/`jwk`, chave fraca, falta de exp);
 (6) Credential stuffing/brute force: ausência de rate-limit/lockout, user enumeration por mensagem ou timing.
 
 Para cada caso: requisição curl/passos, pré-condições e critério objetivo de confirmação (o que indica takeover).

@@ -17,14 +17,16 @@ Cole o código de integração, webhooks, chamadas de API externa e configuraç�
 
 ## Prompt
 ```
-Análise {{CODIGO_DE_INTEGRACAO}} e identifique:
+Analise {{CODIGO_DE_INTEGRACAO}} e identifique:
 
 (1) Todos os serviços externos que recebem dados do sistema;
 (2) Dados enviados para cada serviço: PII, dados financeiros, tokens, conteúdo de usuário;
-(3) Mecanismos de autenticação usados em cada integração: API key, OAuth, webhook secret;
-(4) Ausencia de validação em webhooks recebidos;
+(3) Mecanismos de autenticação usados em cada integração: API key, OAuth, webhook secret; e o escopo do token enviado a cada terceiro (princípio do menor privilégio);
+(4) Ausência de validação em webhooks recebidos: verificação de assinatura HMAC, proteção anti-replay (nonce/timestamp) e re-verificação server-side de webhooks de pagamento;
 (5) Risco de exfiltração de dados por serviço comprometido;
-(6) Configurações de CORS que permitem origens desnecessarias.
+(6) Configurações de CORS que permitem origens desnecessárias;
+(7) SSRF de saída: o servidor busca URLs fornecidas pelo usuário (cruze com `path-traversal-ssrf-e-validacao-de-entrada.md`); avalie egress allowlisting;
+(8) SDKs client-side (analytics/telemetria) que vazam PII para terceiros.
 ```
 
 ## Saída esperada

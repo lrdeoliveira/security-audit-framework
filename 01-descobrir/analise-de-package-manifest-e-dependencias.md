@@ -3,7 +3,7 @@
 **Pilar:** descobrir
 **Fase:** 1-2
 **Categoria:** supply-chain
-**OWASP:** A06:2021 - Vulnerable Components
+**OWASP:** A06:2021 - Vulnerable and Outdated Components (A03:2025 Software Supply Chain Failures)
 **Ferramentas sugeridas:** npm audit, Snyk, Trivy, OSV-Scanner
 **Intenção:** Revisar dependências de risco, pacotes obsoletos e indicadores de supply chain compromise.
 
@@ -19,12 +19,15 @@ Cole o package.json, requirements.txt, go.mod ou Gemfile. Inclua o lockfile se d
 ```
 Atue como especialista em segurança de supply chain. Analise {{PACKAGE_MANIFEST}} e identifique:
 
-(1) Dependencias com CVEs conhecidas de alta severidade e versão vulneravel;
-(2) Pacotes obsoletos sem manutencao ativa ha mais de 12 meses;
-(3) Nomes suspeitos ou parecidos com pacotes legitimos (typosquatting);
+(1) Dependências com CVEs conhecidas de alta severidade e versão vulnerável;
+(2) Pacotes obsoletos sem manutenção ativa há mais de 12 meses;
+(3) Nomes suspeitos ou parecidos com pacotes legítimos (typosquatting);
 (4) Pacotes com histórico de supply chain compromise ou maintainer takeover;
-(5) Dependencias possívelmente alucinadas: nomes que não existem no registro público;
-(6) Caminhos de atualização recomendados com menor risco de quebra de compatibilidade.
+(5) Dependências possivelmente alucinadas: nomes que não existem no registro público;
+(6) Dependency confusion / substitution attack: pacote interno cujo nome é resolvível no registry público (distinto de typosquatting);
+(7) Scripts de instalação maliciosos: `postinstall`/`preinstall` e outros hooks de lifecycle em npm/pip;
+(8) Integridade de lockfile e pinning por hash: `integrity`, `--frozen-lockfile`;
+(9) Caminhos de atualização recomendados com menor risco de quebra de compatibilidade.
 ```
 
 ## Saída esperada

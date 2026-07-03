@@ -3,8 +3,8 @@
 **Pilar:** descobrir
 **Fase:** 1
 **Categoria:** supply-chain
-**OWASP:** A06:2021 - Vulnerable Components
-**Ferramentas sugeridas:** Manual, OSV-Scanner
+**OWASP:** LLM03:2025 - Supply Chain (+ LLM04:2025 Data and Model Poisoning)
+**Ferramentas sugeridas:** Manual, OSV-Scanner, modelscan, AI-BOM
 **Intenção:** Mapear riscos de modelos externos, APIs de IA e dados de treinamento usados no produto.
 
 ## Como usar
@@ -20,12 +20,16 @@ Descreva quais modelos, APIs de IA e serviços de dados externos o produto usa. 
 ```
 Analise o ecossistema de IA externo de {{NOME_DO_PRODUTO}} como especialista em supply chain de sistemas de IA. Contexto: {{DESCRICAO_DE_DEPENDENCIAS_IA}}. Avalie:
 
-(1) Modelos de terceiros: politicas de uso de dados, jurisdicao, retenção de prompts e respostas pelo provedor;
+(1) Modelos de terceiros: políticas de uso de dados, jurisdição, retenção de prompts e respostas pelo provedor;
 (2) APIs de IA: autenticação, rate limiting, fallback em caso de indisponibilidade;
 (3) Fine-tuning e RAG: quais dados do produto foram usados para treinar ou configurar modelos;
 (4) Plugins e ferramentas de LLM: superfície de ataque de cada integração, validação de outputs;
-(5) Cadeia de confianca: se um modelo externo e comprometido, qual e o impacto máximo no produto;
-(6) Conformidade: LGPD, GDPR e regulações setoriais aplicaveis ao processamento por LLMs externos.
+(5) Cadeia de confiança: se um modelo externo é comprometido, qual é o impacto máximo no produto;
+(6) Conformidade: LGPD, GDPR e regulações setoriais aplicáveis ao processamento por LLMs externos;
+(7) Proveniência e integridade de modelos: origem dos pesos (HuggingFace/hubs), arquivos pickle/`.bin` que dão RCE na desserialização, checksums e assinatura (sigstore), scan com `picklescan`/`modelscan`;
+(8) Servidores MCP de terceiros como vetor de supply chain: tool poisoning, rug pull e mudança silenciosa de tool;
+(9) Prompt/template supply chain: prompts e templates puxados de fontes externas (ex. LangChain Hub);
+(10) Pin e versionamento de modelo de geração e de embeddings: risco do provedor mudar comportamento silenciosamente (LLM08:2025).
 ```
 
 ## Saída esperada

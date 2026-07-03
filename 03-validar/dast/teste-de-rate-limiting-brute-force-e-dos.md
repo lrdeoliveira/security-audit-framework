@@ -25,7 +25,8 @@ Atue como especialista em abuso de recursos e disponibilidade. Para {{ENDPOINTS_
 (4) Enumeração em massa: IDs sequenciais, scraping de dados via paginação sem teto;
 (5) Exaustão de recursos: payloads grandes, paginação/limit sem teto, expansão (zip bomb, regex catastrófico), N+1 induzido, queries GraphQL profundas/batched;
 (6) Amplificação de custo: endpoints que disparam IA/LLM, email, SMS, webhooks ou jobs caros sem cota por usuário (denial-of-wallet);
-(7) Falta de teto de upload/concorrência.
+(7) Falta de teto de upload/concorrência;
+(8) Race-condition de limite (single-packet attack): disparar N requisições em paralelo com last-byte sync para estourar cota/cupom antes de o contador atualizar.
 
 Para cada teste: como medir o limite, sinais de bypass e critério de impacto. Use volumes seguros e pare ao confirmar — não derrube o ambiente.
 ```

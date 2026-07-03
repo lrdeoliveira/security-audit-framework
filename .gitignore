@@ -1,5 +1,6 @@
 # Laudos de auditoria reais — NUNCA versionar/publicar (dados de produção)
 auditorias/
+auditorias/**
 
 # Memória/contexto interno
 CLAUDE.md
@@ -9,6 +10,17 @@ nexus-guideline-update-*.md
 raw-scans/
 pre-scan.md
 *.sarif
+
+# Segredos e material sensível (defesa em profundidade — nunca commitar)
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*credentials*
+secrets.*
+id_rsa*
 
 # SO / editor
 .DS_Store

@@ -4,7 +4,7 @@
 **Fase:** 1
 **Categoria:** recon
 **OWASP:** —
-**Ferramentas sugeridas:** Manual, npm audit, pip-audit
+**Ferramentas sugeridas:** Manual, ripgrep, syft (SBOM), leitura de manifests
 **Intenção:** Identificar tecnologias, frameworks e padrões de código gerado por IA antes do teste.
 
 ## Como usar
@@ -17,14 +17,15 @@ Cole o package.json, requirements.txt, Dockerfile ou qualquer arquivo de configu
 
 ## Prompt
 ```
-Análise {{ARQUIVO_DE_CONFIG}} e produza um fingerprint de stack com:
+Analise {{ARQUIVO_DE_CONFIG}} e produza um fingerprint de stack com:
 
 (1) Linguagens e runtimes detectados e suas versões;
 (2) Frameworks principais: web, ORM, auth, infra;
-(3) Padroes que sugerem código gerado por IA: estrutura repetitiva, comentários de scaffold, nomes genéricos;
-(4) Servicos de terceiros integrados: OAuth, pagamentos, storage, email;
-(5) Superficie de dependências de alto risco;
-(6) Lacunas de configuração de segurança: CORS aberto, debug habilitado, TLS ausente.
+(3) Padrões que sugerem código gerado por IA: estrutura repetitiva, comentários de scaffold, nomes genéricos, e marcadores concretos como `TODO: implement`, `your-api-key`/`example.com`, restos de comentários de assistente ("As an AI"), tratamento de erro boilerplate idêntico e ausência de lockfile;
+(4) Serviços de terceiros integrados: OAuth, pagamentos, storage, email;
+(5) Superfície de dependências de alto risco;
+(6) Runtimes e versões fora de suporte (EOL): ex. Node ≤16, Python 2.7, PHP 7.x, e tags de imagem base perigosas no Dockerfile (`:latest`, distro EOL);
+(7) Lacunas de configuração de segurança: CORS aberto, debug habilitado, TLS ausente.
 ```
 
 ## Saída esperada

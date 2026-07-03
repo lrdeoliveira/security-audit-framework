@@ -23,9 +23,12 @@ Atue como especialista em segurança de configuração web. Analise {{CODIGO_DE_
 (2) CORS com allowlist fraca: regex mal escapado, match por substring/startsWith, subdomínios não confiáveis aceitos, null origin permitido;
 (3) CSRF: ausência de token anti-CSRF em ações state-changing com cookie auth, SameSite ausente ou None sem justificativa, Secure/HttpOnly ausentes;
 (4) Clickjacking: ausência de X-Frame-Options/frame-ancestors;
-(5) Headers ausentes ou fracos: HSTS, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, cache em respostas sensíveis;
+(5) Headers ausentes ou fracos: HSTS (exija `max-age` alto + `includeSubDomains` + `preload`), X-Content-Type-Options, Referrer-Policy, Permissions-Policy, COOP/COEP/CORP, cache em respostas sensíveis;
 (6) Cookies de sessão: flags Secure/HttpOnly/SameSite, escopo de domínio/path muito amplo, ausência de rotação no login;
-(7) Métodos HTTP e preflight: aceitação de métodos perigosos, preflight contornável.
+(7) Métodos HTTP e preflight: aceitação de métodos perigosos, preflight contornável;
+(8) SRI ausente: `<script>`/`<link>` de CDN sem atributo `integrity` (supply-chain de terceiros).
+
+Sinks específicos: Laravel `config/cors.php`, `VerifyCsrfToken::$except`, Sanctum stateful domains; Node `helmet`; Go `rs/cors`.
 
 Para cada achado: localização, cenário concreto de exploração (ex: site malicioso lendo /api/me via CORS) e a configuração corrigida.
 ```

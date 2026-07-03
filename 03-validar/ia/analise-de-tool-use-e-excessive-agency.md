@@ -2,30 +2,31 @@
 
 **Pilar:** validar
 **Fase:** 4
-**Categoria:** agent
-**OWASP:** LLM06 - Excessive Agency
+**Categoria:** ia
+**OWASP:** LLM06:2025 - Excessive Agency
 **Ferramentas sugeridas:** Manual, mcp-scan
-**Intenção:** Auditar quais tools um agente tem acesso e se o escopo e adequado ao contexto.
+**Intenção:** Auditar quais tools um agente tem acesso e se o escopo é adequado ao contexto.
 
 ## Como usar
-Cole a lista de tools disponíveis para o agente com descrições e parâmetros. Inclua o system prompt se acessivel.
+Cole a lista de tools disponíveis para o agente com descrições e parâmetros. Inclua o system prompt se acessível.
 
 ## Variáveis
 | Variável | Descrição |
 |----------|-----------|
-| {{NOME_DO_AGENTE}} | Nome e proposito declarado do agente |
+| {{NOME_DO_AGENTE}} | Nome e propósito declarado do agente |
 | {{LISTA_DE_TOOLS}} | Lista completa de tools disponíveis com nome, descrição e parâmetros |
 
 ## Prompt
 ```
-Você e especialista em segurança de agentes de IA. Análise as tools do agente All agents: All tools. Para cada tool ou grupo, avalie:
+Você é especialista em segurança de agentes de IA. Analise as tools do agente {{NOME_DO_AGENTE}}: {{LISTA_DE_TOOLS}}. Para cada tool ou grupo, avalie:
 
-(1) Escopo mínimo: a tool tem acesso mais amplo do que o necessario para a tarefa declarada?
-(2) Side effects irreversiveis: quais tools executam ações que não podem ser desfeitas?
+(1) Escopo mínimo: a tool tem acesso mais amplo do que o necessário para a tarefa declarada?
+(2) Side effects irreversíveis: quais tools executam ações que não podem ser desfeitas?
 (3) Encadeamento perigoso: combinações de tools que juntas criam risco maior do que individualmente;
-(4) Parametros sem validação: campos de input que poderiam ser controlados por um attacker via prompt injection;
-(5) Ausencia de confirmação: ações de alto impacto sem validação do usuário;
-(6) Logging e auditoria: as tool calls sao registradas com contexto suficiente para detectar abuso?
+(4) Parâmetros sem validação: campos de input que poderiam ser controlados por um attacker via prompt injection;
+(5) Ausência de confirmação: ações de alto impacto sem validação do usuário;
+(6) Logging e auditoria: as tool calls são registradas com contexto suficiente para detectar abuso?
+(7) Riscos específicos de MCP: tool poisoning via descrição maliciosa da tool, rug-pull de servidor MCP (a definição da tool muda após a aprovação) e confused deputy (o agente empresta sua autoridade a input não confiável).
 ```
 
 ## Saída esperada

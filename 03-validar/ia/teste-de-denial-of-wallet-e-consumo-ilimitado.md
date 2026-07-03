@@ -25,7 +25,7 @@ Atue como especialista em abuso de custo e disponibilidade de sistemas de IA (LL
 (4) Bypass de cota: múltiplas contas/tenants, troca de chave, race no contador, endpoints alternativos sem limite;
 (5) DoS de modelo: entradas que causam latência alta, payloads que travam tokenização/parsing, uploads grandes para pipelines multimodais/RAG;
 (6) Extração de modelo/sistema: consultas em massa para destilar comportamento ou reconstruir o system prompt/base de conhecimento;
-(7) Custo via fan-out: uma ação do usuário que gera N embeddings/buscas/gerações sem limite.
+(7) Custo via fan-out (cruza com LLM08:2025 - Vector and Embedding Weaknesses): uma ação do usuário que gera N embeddings/buscas/gerações sem limite — o pipeline de embeddings/RAG é superfície de custo.
 
 Para cada teste: ação, como medir tokens/custo/latência, sinais de ausência de limite e estimativa de impacto financeiro. Use volumes pequenos para provar a ausência de teto — não gere custo real significativo.
 ```

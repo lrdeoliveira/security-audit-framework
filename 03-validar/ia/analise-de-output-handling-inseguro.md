@@ -25,7 +25,7 @@ Atue como especialista em segurança de saída de LLM (LLM05). Para o fluxo {{DE
 (3) Command/code injection: saída usada em shell, eval, geração e execução de código (code interpreter, plugins);
 (4) SSRF/path traversal: induzir URLs/caminhos que a aplicação busca ou abre a partir da resposta do modelo;
 (5) Tool call envenenado: induzir o modelo a chamar tool com parâmetros perigosos (deletar, transferir, ler arquivo arbitrário);
-(6) Markdown/formatos: exfiltração via imagem markdown que carrega URL com dados no query string, links enganosos;
+(6) Markdown/formatos (zero-click data exfil): exfiltração via imagem markdown que carrega URL com dados no query string, links enganosos — mitigante: allowlist de domínios de imagem;
 (7) Quebra de contrato estrutural: saída JSON/estrutura que, ao ser confiada, corrompe lógica downstream.
 
 Para cada teste: entrada que induz a saída maliciosa, o sink alvo, o payload de saída esperado e o critério de confirmação. Avalie se há encoding/validação entre modelo e sink.

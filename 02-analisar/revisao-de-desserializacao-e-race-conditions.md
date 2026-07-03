@@ -20,13 +20,13 @@ Cole código que desserializa dados não confiáveis (pickle, PHP unserialize, J
 Atue como especialista em integridade de software e concorrência. Analise {{CODIGO}} e identifique:
 
 DESSERIALIZAÇÃO INSEGURA
-(1) Desserialização de dados controláveis pelo usuário com formatos perigosos (pickle, unserialize, ObjectInputStream, yaml.load não-safe, marshal, gadgets conhecidos);
+(1) Desserialização de dados controláveis pelo usuário com formatos perigosos e gadgets por linguagem: PHP `unserialize()` + POP chains (`__wakeup`/`__destruct`) e `phar://`; Node `node-serialize` + prototype pollution; Python `pickle`/`yaml.load` não-safe; Go `encoding/gob`; Java `ObjectInputStream`;
 (2) Confiança em dados assinados/serializados sem verificação de integridade (cookies, tokens, cache, filas);
 (3) Deploy/atualização sem verificação de integridade (dependências, artefatos, plugins).
 
 RACE CONDITIONS / TOCTOU
 (4) Check-then-act sem atomicidade: validar saldo/estoque/cota e depois aplicar em operações separadas;
-(5) Falta de lock, transação ou controle de concorrência otimista (versionamento) em recursos compartilhados;
+(5) Falta de mecanismo de concorrência em recursos compartilhados: `SELECT … FOR UPDATE`/`lockForUpdate()`, coluna de versão (optimistic lock), constraint UNIQUE, incremento atômico, lock distribuído (Redis `SETNX`/Redlock);
 (6) Idempotência ausente em endpoints de pagamento/criação que permitem replay e duplicação;
 (7) Double-spend, redeem múltiplo de cupom, bypass de limite por requisições paralelas.
 

@@ -4,8 +4,9 @@ Framework de auditoria de segurança (pentest assistido) para aplicações web,
 infraestrutura e sistemas com **IA / LLM / MCP**. Orientado a prompts +
 automação, organizado em 4 pilares mais um orquestrador.
 
-> Versão **1.2** — metodologia prompt-driven, genérica (use placeholders como
-> `{{DESCRICAO_DO_ALVO}}` para adaptar a qualquer produto).
+> Versão **1.3** — metodologia prompt-driven, genérica (use placeholders como
+> `{{DESCRICAO_DO_ALVO}}` para adaptar a qualquer produto). Alinhada ao OWASP LLM
+> Top 10 **2025**, OWASP ASVS **5.0** e CVSS **4.0** (ver [`CHANGELOG.md`](CHANGELOG.md)).
 
 ## Visão geral
 
@@ -33,14 +34,17 @@ bootstrap-scan → plano de ataque → descobrir → analisar → validar → en
    Checkov e mcp-scan, consolidando o resultado.
 2. **Descobrir / Analisar / Validar** — ~35 prompts por categoria (auth, injection,
    path-traversal/SSRF, segredos, cripto, XSS, CORS/CSRF/headers, logging,
-   desserialização, IaC, MCP; e para IA: prompt-injection, guardrails, RAG,
-   excessive-agency, output handling — LLM05, denial-of-wallet — LLM10).
+   desserialização, IaC, MCP; e para IA, na numeração do **OWASP LLM Top 10 2025**:
+   prompt-injection (LLM01), guardrails, RAG e vector/embedding (LLM08), system
+   prompt leakage (LLM07), excessive-agency (LLM06), output handling (LLM05),
+   denial-of-wallet (LLM10)).
 3. **Entregar** — relatório, roadmap de remediação por sprint, mapeamento de
-   conformidade (LGPD/SOC2/ISO 27001/ASVS) e plano de reteste por achado.
+   conformidade (LGPD/GDPR/SOC 2/ISO 27001/ASVS 5.0/PCI DSS/NIST CSF/CIS) e plano
+   de reteste por achado.
 
 Cada achado confirmado é registrado em YAML seguindo
 [`templates/registro-de-achado.yaml`](templates/registro-de-achado.yaml)
-(id, severidade, CVSS 3.1, OWASP, CWE, localização, PoC, impacto, remediação, reteste).
+(id, severidade, CVSS 4.0, OWASP, CWE, localização, PoC, impacto, remediação, reteste).
 
 ## CI/CD
 

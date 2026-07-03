@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ============================================================================
 # bootstrap-scan.sh — Ingestão automatizada do Pilar 1/2 (Descobrir + Analisar)
-# Framework de Auditoria de Segurança v1.2
+# Framework de Auditoria de Segurança v1.3
 #
 # Roda os scanners base sobre um repositório e consolida a saída em um único
 # pre-scan.md, que alimenta os prompts do Pilar 2 (Analisar) sem cópia manual.
@@ -10,7 +10,7 @@
 #   ./00-orquestrador/bootstrap-scan.sh <caminho_do_repo> <produto> [data]
 #
 # Exemplo:
-#   ./00-orquestrador/bootstrap-scan.sh /Volumes/M5SSD/nexusyn-mono nexusyn
+#   ./00-orquestrador/bootstrap-scan.sh ~/projetos/minha-app minha-app
 #
 # Saída:
 #   auditorias/<produto>-<data>/pre-scan.md          (resumo consolidado)
@@ -60,7 +60,7 @@ log() { echo "[$(ts)] $*"; }
   echo
   echo "- **Repo:** \`$REPO\`"
   echo "- **Data:** $DATA"
-  echo "- **Gerado por:** bootstrap-scan.sh (Framework v1.2)"
+  echo "- **Gerado por:** bootstrap-scan.sh (Framework v1.3)"
   echo
   echo "> Saídas brutas em \`raw-scans/\`. Use este resumo como entrada dos prompts do Pilar 2."
   echo
@@ -73,7 +73,8 @@ skip()    { log "SKIP $1 (não instalado)"; echo "_Scanner \`$1\` não instalado
 section "SAST — Semgrep"
 if have semgrep; then
   log "Rodando semgrep..."
-  semgrep scan --config auto --severity ERROR --severity WARNING \
+  # --metrics=off: não enviar telemetria/metadados (auditoria de código confidencial)
+  semgrep scan --config auto --metrics=off --severity ERROR --severity WARNING \
     --json --output "$RAW/semgrep.json" "$REPO" >/dev/null 2>&1
   if have jq && [[ -f "$RAW/semgrep.json" ]]; then
     total=$(jq '.results | length' "$RAW/semgrep.json" 2>/dev/null || echo "?")
@@ -95,7 +96,8 @@ section "Segredos — Gitleaks (histórico git)"
 if have gitleaks; then
   if [[ -d "$REPO/.git" ]]; then
     log "Rodando gitleaks..."
-    gitleaks detect --source "$REPO" --report-format json \
+    # `gitleaks git <path>` varre o histórico (o antigo `detect --source` está deprecado desde a v8.19)
+    gitleaks git "$REPO" --report-format json \
       --report-path "$RAW/gitleaks.json" --redact >/dev/null 2>&1
     if have jq && [[ -f "$RAW/gitleaks.json" ]]; then
       n=$(jq 'length' "$RAW/gitleaks.json" 2>/dev/null || echo "?")
@@ -116,7 +118,9 @@ if have trufflehog; then
   log "Rodando trufflehog..."
   trufflehog filesystem "$REPO" --json --no-update > "$RAW/trufflehog.json" 2>/dev/null
   if [[ -s "$RAW/trufflehog.json" ]]; then
-    verified=$(grep -c '"verified":true' "$RAW/trufflehog.json" 2>/dev/null || echo 0)
+    # grep -c imprime "0" E sai 1 quando não há match; o `|| echo 0` antigo gerava "0\n0".
+    verified=$(grep -c '"verified":true' "$RAW/trufflehog.json" 2>/dev/null || true)
+    verified=${verified:-0}
     echo "**Segredos VERIFICADOS (ativos):** $verified — prioridade máxima." >> "$PRESCAN"
     echo "Detalhes em \`raw-scans/trufflehog.json\`." >> "$PRESCAN"
   else
@@ -181,10 +185,17 @@ fi
 # ---------- 7. mcp-scan (escopo de tools MCP) ----------
 section "MCP — mcp-scan"
 if have mcp-scan; then
-  if grep -rqlE '"mcpServers"|mcp\.json|claude_desktop_config' "$REPO" 2>/dev/null; then
+  # mcp-scan recebe ARQUIVOS de config MCP, não um diretório de repo.
+  # Coleta por conteúdo ("mcpServers") e por nome de arquivo conhecido.
+  MCP_CFGS=$( { grep -rlE '"mcpServers"' "$REPO" 2>/dev/null; \
+               find "$REPO" \( -name "mcp.json" -o -name "claude_desktop_config.json" \) 2>/dev/null; \
+             } | sort -u )
+  if [[ -n "$MCP_CFGS" ]]; then
     log "Config MCP detectada, rodando mcp-scan..."
-    mcp-scan "$REPO" > "$RAW/mcp-scan.txt" 2>&1 || true
-    echo "Saída em \`raw-scans/mcp-scan.txt\` — revisar over-permission e escopo de tools." >> "$PRESCAN"
+    printf '%s\n' "$MCP_CFGS" > "$RAW/mcp-configs.txt"
+    # shellcheck disable=SC2086
+    mcp-scan scan $MCP_CFGS > "$RAW/mcp-scan.txt" 2>&1 || true
+    echo "Configs MCP em \`raw-scans/mcp-configs.txt\`; saída em \`raw-scans/mcp-scan.txt\` — revisar over-permission, escopo de tools e tool poisoning." >> "$PRESCAN"
   else
     echo "_Nenhuma config MCP detectada — mcp-scan pulado._" >> "$PRESCAN"
   fi
@@ -196,10 +207,13 @@ fi
 section "Inventário rápido (fingerprint)"
 {
   echo "Manifests/configs encontrados:"; echo
-  find "$REPO" -maxdepth 3 \( \
-    -name "package.json" -o -name "go.mod" -o -name "requirements.txt" \
-    -o -name "composer.json" -o -name "Gemfile" -o -name "pom.xml" \
-    -o -name "Cargo.toml" -o -name "*.csproj" -o -name "Dockerfile" \
+  find "$REPO" -maxdepth 4 \( \
+    -name "package.json" -o -name "pnpm-lock.yaml" -o -name "yarn.lock" \
+    -o -name "go.mod" -o -name "requirements.txt" -o -name "pyproject.toml" \
+    -o -name "Pipfile" -o -name "composer.json" -o -name "Gemfile" \
+    -o -name "pom.xml" -o -name "build.gradle" -o -name "*.gradle" \
+    -o -name "Cargo.toml" -o -name "*.csproj" -o -name "mix.exs" \
+    -o -name "pubspec.yaml" -o -name "Dockerfile" \
     -o -name "docker-compose*.yml" -o -name "*.tf" \) \
     -not -path '*/node_modules/*' -not -path '*/vendor/*' 2>/dev/null \
     | sed "s|$REPO|.|" | sort | sed 's/^/- /'
@@ -212,6 +226,7 @@ cat >> "$PRESCAN" <<'NEXT'
 2. Alimentar os prompts do **Pilar 2 (Analisar)** com os trechos de código sinalizados:
    - auth → `02-analisar/revisao-de-autenticacao-e-controle-de-acesso.md`
    - injection → `02-analisar/revisao-de-injection-e-execucao-arbitraria.md`
+   - path-traversal/SSRF → `02-analisar/path-traversal-ssrf-e-validacao-de-entrada.md`
    - XSS/client-side → `02-analisar/revisao-de-xss-e-seguranca-client-side.md`
    - CORS/CSRF/headers → `02-analisar/revisao-de-cors-csrf-e-headers-de-seguranca.md`
    - segredos/config → `02-analisar/analise-de-segredos-e-configuracao-insegura.md`

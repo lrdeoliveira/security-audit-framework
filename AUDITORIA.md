@@ -2,6 +2,9 @@
 
 Framework proprietário para auditorias web, infraestrutura e sistemas com IA/LLM/MCP.
 
+> Versão **1.3** — currency OWASP LLM Top 10 **2025**, OWASP ASVS **5.0**, CVSS **4.0**;
+> ver o histórico em [`CHANGELOG.md`](CHANGELOG.md).
+
 ## Visão geral
 
 
@@ -148,15 +151,15 @@ Todos os achados confirmados devem ser registrados em YAML seguindo `[templates/
 | `id`            | `AUD-001`                                          | Identificador sequencial             |
 | `titulo`        | string                                             | Título descritivo e específico       |
 | `severidade`    | critico | alto | medio | baixo | info              | Classificação de risco               |
-| `cvss`          | string                                             | Score e vetor CVSS 3.1               |
-| `owasp`         | string                                             | OWASP Top 10 ou OWASP LLM Top 10     |
+| `cvss`          | string                                             | Score e vetor CVSS 4.0 (3.1 aceito)  |
+| `owasp`         | string                                             | OWASP Top 10 (2021/2025) ou OWASP LLM Top 10 (2025) |
 | `cwe`           | string                                             | CWE-ID quando aplicável              |
 | `pilar`         | descobrir | analisar | validar                     | Pilar de origem                      |
 | `subpilar`      | dast | red-team | ia | null                         | Subpilar de origem (para Pilar 3)    |
 | `status`        | rascunho | confirmado | falso_positivo | corrigido | Estado atual                         |
 | `prompt_origem` | string                                             | Arquivo de prompt que gerou o achado |
 | `deriva_de`     | `AUD-0XX` | null                                   | Achado de origem (correlação SAST→DAST) |
-| `conformidade`  | mapa (lgpd/soc2/iso27001/asvs)                     | Controles violados (opcional)        |
+| `conformidade`  | mapa (lgpd/gdpr/soc2/iso27001/asvs/pci_dss/nist_csf/cis) | Controles violados (opcional)  |
 | `localizacao`   | string                                             | Path, arquivo ou linha afetada       |
 | `descricao`     | string                                             | Detalhamento técnico da causa raiz   |
 | `poc`           | string                                             | curl ou passos para reproduzir PoC   |
@@ -168,6 +171,14 @@ Todos os achados confirmados devem ser registrados em YAML seguindo `[templates/
 | `data_correcao` | string (YYYY-MM-DD) \| null                        | Data da remediação ou null           |
 | `reteste`       | pendente \| aprovado \| reprovado                  | Estado de validação da correção      |
 
+
+### Blocos de topo do `achados.yaml`
+
+Além da lista `achados`, o arquivo tem três blocos de topo:
+
+- **`meta`** — `produto`, `data_inicio`, `data_fim`, `auditor`, `escopo`, `versao_framework`.
+- **`resumo`** — contagem por severidade (`total`, `critico`, `alto`, `medio`, `baixo`, `info`), mantida em sincronia com a lista.
+- **`cobertura`** (recomendado) — `endpoints_total`/`endpoints_testados`, `componentes_ia_total`/`componentes_ia_testados` e uma `observacao`; mede quanto da superfície foi de fato exercida.
 
 ### Severidade — guia rápido
 
@@ -209,7 +220,7 @@ auditorias/
 | Descobrir    | Katana, nuclei (passivo), manual                       |
 | Analisar     | Semgrep, TruffleHog/Gitleaks, Checkov, Trivy, osv-scanner, mcp-scan |
 | Validar DAST | Burp Suite, OWASP ZAP, ffuf                            |
-| Validar IA   | Garak, Promptfoo, manual                               |
+| Validar IA   | Garak, Promptfoo, PyRIT, manual                        |
 | Entregar     | Script gerado + CI/CD (GitHub Actions)                 |
 
 
