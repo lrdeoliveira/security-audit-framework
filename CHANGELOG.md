@@ -3,6 +3,33 @@
 Todas as mudanças relevantes do Security Audit Framework. Formato baseado em
 [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [1.4] — 2026-10-02
+
+### Adicionado (automação e performance)
+- **Execução paralela no `bootstrap-scan.sh`:** os scanners base agora rodam em paralelo
+  por padrão, reduzindo o tempo total de varredura de ~10-15 minutos para ~1-2 minutos.
+  Adicionadas flags de controle: `--parallel`, `--sequential`, `--fast`, `--only`,
+  `--skip`, `--timeout` e `--auto-ingest`.
+- **CLI unificado (`scripts/audit_tool.py`):**
+  - `ingest`: ingere automaticamente saídas JSON de Semgrep, Gitleaks, TruffleHog,
+    Trivy, OSV e Checkov, gerando rascunhos deduplicados em `achados.yaml` com CWE e OWASP.
+  - `validate`: valida schema YAML, tipos de enums, integridade de `deriva_de` e sincronia
+    dos contadores no bloco `resumo`.
+  - `report`: compila `achados.yaml` diretamente em `relatorio-final.md` com estatísticas,
+    matriz de risco, cards técnicos e roadmap de remediação.
+  - `stats`: exibe resumo tabular com cores diretamente no terminal.
+  - `select`: filtra os prompts do framework recomendados para a stack informada.
+- **Catálogo estruturado (`catalog/prompts.json` e `catalog/prompts.yaml`):** indexa
+  todos os 41 prompts com gatilhos por stack (`triggers`), permitindo que agentes de IA
+  carreguem apenas os prompts pertinentes sem estourar a janela de contexto.
+- **`AGENTS.md`:** diretrizes padronizadas para orquestração de auditorias por agentes
+  autônomos (Antigravity, Claude Code, Cursor, Codex).
+- **`Makefile`:** atalhos intuitivos de 1 linha (`make scan`, `make ingest`, `make validate`,
+  `make report`, `make select`, `make test`).
+- **Suíte de testes:** `scripts/test_audit_tool.py` com testes unitários cobrindo todos os
+  parsers de ferramentas, deduplicação, validação e compilação de laudos.
+- **CI/CD:** cache de banco de dados do Trivy adicionado em `ci-cd/security-audit.yml`.
+
 ## [1.3] — 2026-07-03
 
 ### Corrigido (bugs / prompts quebrados)

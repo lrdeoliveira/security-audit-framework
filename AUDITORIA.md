@@ -2,11 +2,12 @@
 
 Framework proprietário para auditorias web, infraestrutura e sistemas com IA/LLM/MCP.
 
-> Versão **1.3** — currency OWASP LLM Top 10 **2025**, OWASP ASVS **5.0**, CVSS **4.0**;
+> Versão **1.4** — automação CLI (`scripts/audit_tool.py`), bootstrap-scan concorrente/paralelo,
+> validação estrita de schema, seleção de prompts e compilação de laudos;
+> currency OWASP LLM Top 10 **2025**, OWASP ASVS **5.0**, CVSS **4.0**;
 > ver o histórico em [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Visão geral
-
 
 | Pilar            | Pasta              | Objetivo                                               | Fase          |
 | ---------------- | ------------------ | ------------------------------------------------------ | ------------- |
@@ -15,8 +16,9 @@ Framework proprietário para auditorias web, infraestrutura e sistemas com IA/LL
 | **2. Analisar**  | `02-analisar/`     | Revisão estática de código, config e IaC               | Fase 2        |
 | **3. Validar**   | `03-validar/`      | Confirmar explorabilidade (DAST, Red Team, IA)         | Fases 3–4     |
 | **4. Entregar**  | `04-entregar/`     | Documentar, priorizar remediação e automatizar reteste | Fase 5        |
+| **Automação**    | `scripts/`         | CLI unificado (`audit_tool.py`) para ingestão e laudos | Transversal   |
+| **Catálogo**     | `catalog/`         | Índice estruturado de prompts para LLMs e agentes      | Transversal   |
 | **Templates**    | `templates/`       | Schema de achados e estrutura de relatório             | Transversal   |
-
 
 ---
 
@@ -25,20 +27,21 @@ Framework proprietário para auditorias web, infraestrutura e sistemas com IA/LL
 ```mermaid
 flowchart TD
     START([Início da auditoria]) --> PLAN[00 - Plano de ataque em 5 fases]
-    PLAN --> D1[01 - Descobrir]
+    PLAN --> SCAN[00 - Bootstrap scan paralelo: make scan]
+    SCAN --> INGEST[Automação: make ingest -> achados.yaml]
+    INGEST --> D1[01 - Descobrir]
     D1 --> A2[02 - Analisar]
     A2 --> V3[03 - Validar DAST]
     V3 --> V4{App tem IA/LLM?}
     V4 -->|Sim| IA[03 - Validar IA + Red Team]
     V4 -->|Não| RT[03 - Red Team opcional]
-    IA --> E5[04 - Entregar]
-    RT --> E5
+    IA --> VAL[Automação: make validate]
+    RT --> VAL
+    VAL --> E5[04 - Entregar: make report]
     E5 --> RET{Reteste necessário?}
     RET -->|Sim| V3
     RET -->|Não| END([Auditoria concluída])
 ```
-
-
 
 ---
 
@@ -49,8 +52,9 @@ flowchart TD
 - [ ] Definir escopo: URLs, repositórios, ambientes (dev/staging/prod)
 - [ ] Obter autorização formal por escrito
 - [ ] Executar `[plano-de-ataque-em-5-fases](00-orquestrador/plano-de-ataque-em-5-fases.md)`
-- [ ] Rodar ingestão automatizada: `[bootstrap-scan-automatizado](00-orquestrador/bootstrap-scan-automatizado.md)` (gera `pre-scan.md`)
-- [ ] Criar arquivo de registro: `auditorias/{produto}-{data}/achados.yaml`
+- [ ] Rodar ingestão automatizada paralela: `make scan REPO=... PROD=...` (gera `pre-scan.md` e `raw-scans/`)
+- [ ] Ingerir achados automáticos: `make ingest AUDIT=auditorias/{produto}-{data}` (popula `achados.yaml` com rascunhos)
+- [ ] Selecionar prompts específicos do stack: `make select STACK=...` (economiza tokens de IA)
 
 ### Pilar 1 — Descobrir
 
@@ -117,11 +121,12 @@ Prioridade máxima primeiro:
 
 - [ ] Para cada achado confirmado: `[ficha-tecnica-de-achado](04-entregar/ficha-tecnica-de-achado.md)`
 - [ ] *Se há requisito regulatório:* `[mapeamento-de-conformidade](04-entregar/mapeamento-de-conformidade.md)`
-- [ ] Consolidar: `[sumario-executivo-de-pentest](04-entregar/sumario-executivo-de-pentest.md)`
+- [ ] Validar schema e contagens: `make validate AUDIT=...` (ou `python3 scripts/audit_tool.py validate`)
+- [ ] Gerar laudo compilado: `make report AUDIT=...` (ou `python3 scripts/audit_tool.py report`)
+- [ ] Consolidar sumário executivo: `[sumario-executivo-de-pentest](04-entregar/sumario-executivo-de-pentest.md)`
 - [ ] Planejar correções: `[roadmap-de-remediacao-por-sprint](04-entregar/roadmap-de-remediacao-por-sprint.md)`
 - [ ] Automatizar reteste: `[geracao-de-script-de-scan-automatizado](04-entregar/geracao-de-script-de-scan-automatizado.md)`
 - [ ] Validar correções: `[plano-de-reteste-por-achado](04-entregar/plano-de-reteste-por-achado.md)`
-- [ ] Preencher `[templates/relatorio-final.md](templates/relatorio-final.md)`
 
 ---
 

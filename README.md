@@ -2,66 +2,75 @@
 
 Framework de auditoria de segurança (pentest assistido) para aplicações web,
 infraestrutura e sistemas com **IA / LLM / MCP**. Orientado a prompts +
-automação, organizado em 4 pilares mais um orquestrador.
+automação de alto rendimento, organizado em 4 pilares mais um orquestrador.
 
-> Versão **1.3** — metodologia prompt-driven, genérica (use placeholders como
-> `{{DESCRICAO_DO_ALVO}}` para adaptar a qualquer produto). Alinhada ao OWASP LLM
-> Top 10 **2025**, OWASP ASVS **5.0** e CVSS **4.0** (ver [`CHANGELOG.md`](CHANGELOG.md)).
+> Versão **1.4** — metodologia prompt-driven com automação CLI, ingestão concorrente,
+> validação de schema e geração de laudos. Alinhada ao OWASP LLM Top 10 **2025**,
+> OWASP ASVS **5.0** e CVSS **4.0** (ver [`CHANGELOG.md`](CHANGELOG.md)).
 
 ## Visão geral
 
 | Pilar | Pasta | Objetivo | Fase |
-|-------|-------|----------|------|
-| **Orquestrador** | `00-orquestrador/` | Planejar escopo, sequência e entregáveis | Pré-auditoria |
+|---|---|---|---|
+| **Orquestrador** | `00-orquestrador/` | Planejar escopo, ingestão paralela e entregáveis | Pré-auditoria |
 | **1. Descobrir** | `01-descobrir/` | Mapear stack, superfície de ataque e componentes de IA | Fase 1 |
 | **2. Analisar** | `02-analisar/` | Revisão estática de código, config e IaC (SAST) | Fase 2 |
 | **3. Validar** | `03-validar/` | Confirmar explorabilidade (DAST, Red Team, IA) | Fases 3–4 |
 | **4. Entregar** | `04-entregar/` | Documentar, priorizar remediação e automatizar reteste | Fase 5 |
-| **Templates** | `templates/` | Schema de achados e estrutura de relatório | Transversal |
-| **CI/CD** | `ci-cd/` | Pipeline de auditoria contínua (GitHub Actions) | Transversal |
+| **Automação** | `scripts/` | CLI `audit_tool.py` (ingestão, validação, laudos, select) | Transversal |
+| **Catálogo** | `catalog/` | Índice estruturado de prompts para economia de tokens de IA | Transversal |
+| **Templates** | `templates/` | Schema de achados YAML e estrutura de relatório | Transversal |
+| **CI/CD** | `ci-cd/` | Pipeline de auditoria contínua (GitHub Actions com cache) | Transversal |
 
 O ponto de entrada completo é [`AUDITORIA.md`](AUDITORIA.md).
 
-## Fluxo
+## Fluxo Automatizado v1.4
 
 ```
-bootstrap-scan → plano de ataque → descobrir → analisar → validar → entregar
-                                                          ↑__________ reteste __________|
+make scan (paralelo) ──> make ingest (achados.yaml) ──> DAST/IA ──> make validate ──> make report
+                                                             ↑______ reteste _______|
 ```
 
-1. **Orquestrador** — `00-orquestrador/plano-de-ataque-em-5-fases.md` define o escopo;
-   `bootstrap-scan.sh` roda Semgrep, Gitleaks, TruffleHog, Trivy, osv-scanner,
-   Checkov e mcp-scan, consolidando o resultado.
-2. **Descobrir / Analisar / Validar** — ~35 prompts por categoria (auth, injection,
-   path-traversal/SSRF, segredos, cripto, XSS, CORS/CSRF/headers, logging,
-   desserialização, IaC, MCP; e para IA, na numeração do **OWASP LLM Top 10 2025**:
-   prompt-injection (LLM01), guardrails, RAG e vector/embedding (LLM08), system
-   prompt leakage (LLM07), excessive-agency (LLM06), output handling (LLM05),
-   denial-of-wallet (LLM10)).
-3. **Entregar** — relatório, roadmap de remediação por sprint, mapeamento de
-   conformidade (LGPD/GDPR/SOC 2/ISO 27001/ASVS 5.0/PCI DSS/NIST CSF/CIS) e plano
-   de reteste por achado.
-
-Cada achado confirmado é registrado em YAML seguindo
-[`templates/registro-de-achado.yaml`](templates/registro-de-achado.yaml)
-(id, severidade, CVSS 4.0, OWASP, CWE, localização, PoC, impacto, remediação, reteste).
+1. **Varredura Base (Concorrente):**
+   ```bash
+   make scan REPO=/caminho/do/alvo PROD=minha-app
+   # Executa Semgrep, Gitleaks, TruffleHog, Trivy, OSV e Checkov em paralelo (3x-5x mais rápido).
+   ```
+2. **Ingestão Automática de Achados:**
+   ```bash
+   make ingest AUDIT=auditorias/minha-app-YYYY-MM-DD
+   # Converte saídas brutas (JSON) diretamente em rascunhos estruturados em achados.yaml com CWE e OWASP.
+   ```
+3. **Seleção de Prompts Otimizada (Economia de Tokens):**
+   ```bash
+   make select STACK=laravel,vue,ia,docker
+   # Retorna apenas os prompts relevantes ao stack, evitando carregar 40 arquivos de prompt no LLM.
+   ```
+4. **Validação de Qualidade e Integridade:**
+   ```bash
+   make validate AUDIT=auditorias/minha-app-YYYY-MM-DD
+   # Garante conformidade de enums, CVSS 4.0, integridade de deriva_de e consistência das estatísticas.
+   ```
+5. **Geração do Laudo Final:**
+   ```bash
+   make report AUDIT=auditorias/minha-app-YYYY-MM-DD
+   # Compila automaticamente achados.yaml no relatório executivo e técnico relatorio-final.md.
+   ```
 
 ## CI/CD
 
 `ci-cd/security-audit.yml` é um template de GitHub Actions para auditoria
-contínua: roda os scanners, quebra o build em achados **CRITICAL** e envia SARIF
-para o Code Scanning. Copie para `.github/workflows/` no repositório alvo.
+contínua: roda os scanners com cache de banco de vulnerabilidades (Trivy),
+quebra o build em achados **CRITICAL** e envia SARIF para o Code Scanning.
+Copie para `.github/workflows/` no repositório alvo.
 
-## Uso com agente (Claude Code)
+## Uso com Agentes de IA
 
-O repositório inclui uma skill que executa o framework de ponta a ponta:
-[`.claude/skills/security-audit`](.claude/skills/security-audit/SKILL.md).
-
-Ao abrir este repositório (ou o repositório alvo, com esta skill instalada) no
-Claude Code, peça algo como *"faça uma auditoria de segurança deste projeto"* — a
-skill confirma a autorização, define o escopo, roda o `bootstrap-scan`, percorre os
-pilares na ordem e consolida os achados no schema YAML. Para revisar apenas o diff
-atual, use o `/security-review` nativo.
+O framework suporta nativamente agentes autônomos (**Antigravity**, **Claude Code**, **Cursor**, **Codex**):
+- Instruções detalhadas para agentes: [`AGENTS.md`](AGENTS.md)
+- Skill Claude: [`.claude/skills/security-audit/SKILL.md`](.claude/skills/security-audit/SKILL.md)
+- Skill Antigravity/Redfox: [`skills/security-audit/SKILL.md`](skills/security-audit/SKILL.md)
+- Regra Cursor: [`.cursor/rules/auditoria-seguranca.mdc`](.cursor/rules/auditoria-seguranca.mdc)
 
 ## Uso responsável
 

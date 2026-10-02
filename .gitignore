@@ -27,3 +27,8 @@ id_rsa*
 *.swp
 .idea/
 .vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class

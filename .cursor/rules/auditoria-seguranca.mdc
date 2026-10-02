@@ -15,11 +15,13 @@ Ao auditar segurança neste workspace, siga o framework em `AUDITORIA.md`.
 4. `03-validar/` — DAST, red-team, IA (se aplicável)
 5. `04-entregar/` — ficha técnica, sumário, roadmap, automação
 
-## Registro de achados
+## Registro de achados e Automação (v1.4)
 
-- Criar `auditorias/{produto}-{YYYY-MM-DD}/achados.yaml` a partir de `templates/registro-de-achado.yaml`
-- Achados confirmados: `id` AUD-NNN, severidade, CVSS, OWASP, CWE, pilar, status, poc, impacto, remediacao, `prompt_origem`
-- Relatório final: `templates/relatorio-final.md`
+- Ingestão automática: `python3 scripts/audit_tool.py ingest auditorias/{produto}-{data}` (ou `make ingest`)
+- Validação de schema: `python3 scripts/audit_tool.py validate auditorias/{produto}-{data}` (ou `make validate`)
+- Compilação do laudo: `python3 scripts/audit_tool.py report auditorias/{produto}-{data}` (ou `make report`)
+- Seleção de prompts: `python3 scripts/audit_tool.py select --stack <tecnologias>` (ou `make select STACK=...`)
+- Schema em `templates/registro-de-achado.yaml`; laudo final em `templates/relatorio-final.md`
 
 ## Matriz rápida
 
